@@ -93,7 +93,7 @@ const firebaseConfig = {
             console.log('error creating the user',error.message);
         }
     }
-    return userDocref;
+    return userSnapshot;
     // if user data does not exist
     // create / set the document with the data from userAuth in my collection
 
@@ -119,4 +119,16 @@ const firebaseConfig = {
 
   export const onAuthStateChangedListener = (callback) => {
     onAuthStateChanged(auth, callback);
+  }
+  export const getCurrentUser = () =>{
+    return new Promise((resolve, reject)=>{
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (userAuth)=>{
+          unsubscribe();
+          resolve(userAuth);
+        },
+        reject
+      )
+    })
   }
