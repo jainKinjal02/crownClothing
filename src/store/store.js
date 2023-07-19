@@ -8,15 +8,21 @@ import thunk from 'redux-thunk';
 import { dispatch } from 'react';
 import { loggerMiddleware } from './middleware/logger';
 
+import createSagaMiddleware from 'redux-saga';
+
+import { rootSaga } from './root-saga';
+
 const persistConfig = {
     key: 'root',
     storage,
     whitelist: ['cart'],
 }
 
+const sagaMiddleware = createSagaMiddleware();
+
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const middleWares = [process.env.NODE_ENV === 'production' && loggerMiddleware , thunk,].filter(Boolean); //if in production nothing will be logged from the middleware logger
+const middleWares = [process.env.NODE_ENV === 'production' && loggerMiddleware,sagaMiddleware , thunk,].filter(Boolean); //if in production nothing will be logged from the middleware logger
 
 // const thunkMiddleware = (store)=> (next) => (action)=>{
 //     if(typeof(action) === 'function'){
@@ -29,5 +35,7 @@ const composeEnhancer = (process.env.NODE_ENV !== 'production' && window && wind
 const composedEnhancers = composeEnhancer(applyMiddleware(...middleWares));
 
 export const store = createStore(persistedReducer , undefined, composedEnhancers); //store will be using persistedreducer that is the reducer persisting all latest changes as per local storage changes
+
+sagaMiddleware.run(rootSaga);
 
 export const persistor = persistStore(store);
